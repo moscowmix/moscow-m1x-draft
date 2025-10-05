@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Stage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/moscow-m1x-draft/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/moscow-m1x-draft/favicon.svg" />
+    <link rel="shortcut icon" href="/moscow-m1x-draft/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/moscow-m1x-draft/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Moscow-m1x-draft" />
+    <link rel="manifest" href="/moscow-m1x-draft/site.webmanifest" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 19px;
+            letter-spacing: 1.2px;
+            background: url('bg2.png') center center / cover fixed;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 16px 12px;
+        }
+        .back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
+            background: rgba(30, 40, 60, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #66ccff;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            border: 1px solid rgba(100, 200, 255, 0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+        }
+        .back-btn:hover {
+            background: rgba(40, 50, 70, 0.9);
+            transform: translateY(-2px);
+        }
+        .groups-header {
+            text-align: center;
+            margin: 20px 0 30px;
+            color: #66ffcc;
+            font-size: 2.4em;
+            text-shadow: 0 0 8px rgba(102, 255, 204, 0.6);
+            letter-spacing: 2px;
+            padding-top: 20px;
+        }
+        .loading, .firebase-error {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.2em;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .loading {
+            color: #ffcc00;
+        }
+        .firebase-error {
+            background: rgba(80, 20, 20, 0.9);
+            color: #ff6666;
+            border-radius: 10px;
+            border: 1px solid #ff3333;
+        }
+        .setup-ui {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(20,20,40,0.85);
+            padding: 24px;
+            border-radius: 16px;
+            border: 2px solid rgba(100,255,200,0.3);
+            box-sizing: border-box;
+        }
+        .setup-title {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #66ffcc;
+            letter-spacing: 1px;
+        }
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            background: rgba(30,30,50,0.8);
+            border: 1px solid rgba(100,200,255,0.4);
+            color: #e0e0e0;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+            text-align: center;
+        }
+        .mode-btn.active {
+            background: rgba(100,200,255,0.3);
+            color: #fff;
+            border-color: #66ffcc;
+            box-shadow: 0 0 10px rgba(102,255,204,0.4);
+        }
+        .teams-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+        .team-item {
+            padding: 8px 12px;
+            background: rgba(100,200,255,0.1);
+            border: 1px solid rgba(100,200,255,0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            min-width: 80px;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .team-item:hover {
+            background: rgba(100,200,255,0.2);
+            transform: scale(1.05);
+        }
+        .team-item.selected {
+            background: rgba(102,255,204,0.3);
+            border-color: #66ffcc;
+            color: #000;
+        }
+        .groups-setup {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .group-col {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+        .group-title {
+            text-align: center;
+            margin-bottom: 12px;
+            color: #66ffcc;
+            font-size: 1.4em;
+            letter-spacing: 1px;
+        }
+        .group-teams {
+            min-height: 220px;
+            background: rgba(10,10,20,0.6);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed rgba(100,200,255,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        .group-team-item {
+            padding: 8px 12px;
+            background: rgba(102,255,204,0.15);
+            border: 1px solid rgba(102,255,204,0.4);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.95em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .group-team-item:hover {
+            background: rgba(102,255,204,0.25);
+        }
+        .confirm-btn {
+            display: block;
+            margin: 24px auto 0;
+            padding: 12px 28px;
+            background: rgba(255,100,100,0.8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2em;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            min-width: 160px;
+            text-align: center;
+        }
+        .confirm-btn:hover {
+            background: rgba(255,120,120,0.9);
+            transform: translateY(-2px);
+        }
+        .confirm-btn:disabled {
+            background: rgba(100,100,120,0.6);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .groups-container {
+            display: flex;
+            gap: 100px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .group-box {
+            flex: 1;
+            min-width: 800px;
+            max-width: 800px;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid rgba(100, 255, 200, 0.3);
+            margin-right: 20px;
+            box-sizing: border-box;
+        }
+        .group-box:last-child {
+            margin-right: 0;
+        }
+        @media (max-width: 950px) {
+            .groups-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .group-box {
+                margin-right: 0;
+                margin-bottom: 20px;
+                width: 100%;
+                max-width: 100%;
+                min-width: 320px;
+                overflow: hidden;
+            }
+        }
+        .group-title-table {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 16px;
+            color: #66ffcc;
+            letter-spacing: 1.5px;
+        }
+        .standings-table-wrapper {
+            overflow-x: auto;
+            margin-top: 16px;
+            width: 100%;
+        }
+        .matches-table, .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.98em;
+        }
+        .matches-table th,
+        .matches-table td,
+        .standings-table th,
+        .standings-table td {
+            padding: 10px 12px;
+            text-align: center;
+            border: 1px solid rgba(100, 200, 255, 0.3);
+            white-space: nowrap;
+        }
+        .matches-table th,
+        .standings-table th {
+            background: rgba(0, 100, 80, 0.6);
+            color: #66ffcc;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .standings-table .rank-first {
+            background: rgba(50, 200, 100, 0.25);
+            border-left: 3px solid #44ff88;
+        }
+        .standings-table .rank-second {
+            background: rgba(100, 180, 255, 0.25);
+            border-left: 3px solid #66ccff;
+        }
+        .standings-table .rank-first td:first-child,
+        .standings-table .rank-second td:first-child {
+            font-weight: bold;
+        }
+        .match-cell {
+            cursor: pointer;
+            transition: background 0.2s;
+            min-width: 150px;
+            padding: 8px 10px;
+            font-size: 1.05em;
+        }
+        .match-cell:hover {
+            background: rgba(100, 200, 255, 0.1);
+        }
+        .match-cell.completed {
+            background: rgba(0, 150, 120, 0.3);
+        }
+        .map-select {
+            background: rgba(30, 30, 50, 0.8);
+            color: white;
+            border: 1px solid rgba(100, 200, 255, 0.4);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1em;
+            min-width: 100px;
+            width: 100%;
+        }
+        .score-input {
+            width: 55px;
+            background: rgba(30, 30, 50, 0.8);
+            color: white;
+            border: 1px solid rgba(100, 200, 255, 0.4);
+            border-radius: 6px;
+            text-align: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1em;
+            padding: 6px;
+            min-width: 55px;
+            flex-shrink: 0;
+        }
+        .score-separator {
+            font-weight: bold;
+            color: #e0e0e0;
+            padding: 0 6px;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+        .match-card {
+            background: rgba(30, 30, 50, 0.7);
+            border: 1px solid rgba(100, 200, 255, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .match-card.round-header {
+            background: rgba(0, 100, 80, 0.6);
+            color: #66ffcc;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 16px;
+            border: none;
+            border-radius: 8px;
+        }
+        .match-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .match-teams {
+            font-size: 1.1em;
+            text-align: center;
+            padding: 6px 0;
+            font-weight: bold;
+        }
+        .match-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .match-control-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 120px;
+        }
+        @media (max-width: 768px) {
+            .matches-table th:nth-child(2),
+            .matches-table td:nth-child(2) {
+                min-width: 120px;
+                font-size: 0.9em;
+            }
+            .matches-table th:nth-child(3),
+            .matches-table td:nth-child(3) {
+                min-width: 80px;
+            }
+            .matches-table th:nth-child(4),
+            .matches-table td:nth-child(4) {
+                min-width: 130px;
+            }
+            .score-input {
+                width: 40px;
+                padding: 4px;
+                font-size: 0.85em;
+            }
+            .map-select {
+                min-width: 80px;
+                font-size: 0.85em;
+                padding: 4px 6px;
+            }
+            .score-separator {
+                padding: 0 3px;
+                font-size: 1em;
+            }
+        }
+        @media (max-width: 600px) {
+            .matches-table-wrapper {
+                display: none;
+            }
+            .matches-cards-wrapper {
+                display: block;
+            }
+            .group-title-table {
+                font-size: 1.6em;
+            }
+            .match-control-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .map-select, .score-input {
+                width: 100%;
+                font-size: 1em;
+            }
+        }
+        @media (min-width: 601px) {
+            .matches-cards-wrapper {
+                display: none;
+            }
+        }
+        .footer-credit {
+            text-align: center;
+            margin-top: 70px;
+            padding: 10px 0;
+            font-size: 0.85em;
+            color: #777;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .right-control-panel {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .control-btn.reset-groups-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(80, 40, 60, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #ff6666;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+            border: 1px solid rgba(100,100,120,0.4);
+        }
+        .control-btn.reset-groups-btn:hover {
+            background: rgba(100, 50, 70, 0.9);
+            color: #ff8888;
+            transform: translateY(-3px);
+        }
+        #rouletteContainer {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(20,20,40,0.9);
+            border: 2px solid rgba(255,204,0,0.5);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255,204,0,0.3);
+            z-index: 1001;
+            min-width: 220px;
+            text-align: center;
+            animation: pulseRoulette 1s infinite;
+        }
+        @keyframes pulseRoulette {
+            0% { box-shadow: 0 0 20px rgba(255,204,0,0.3); }
+            50% { box-shadow: 0 0 30px rgba(255,204,0,0.6); }
+            100% { box-shadow: 0 0 20px rgba(255,204,0,0.3); }
+        }
+        #rouletteContainer h3 {
+            color: #ffcc00;
+            margin: 0 0 15px;
+            font-size: 1.4em;
+            letter-spacing: 1px;
+        }
+        #spinRouletteBtn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 200, 100, 0.8);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        #rouletteResult {
+            color: #ffffff;
+            padding: 10px;
+            border: 1px dashed rgba(255,204,0,0.5);
+            border-radius: 6px;
+            min-height: 40px;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn" title="Назад к драфту">←</a>
+    <h1 class="groups-header">GROUP STAGE</h1>
+    <div id="groupsContent">
+        <div class="loading">Loading group stage data...</div>
+    </div>
+    <div class="right-control-panel">
+        <div class="control-btn reset-groups-btn" id="resetGroupsBtn" title="Сбросить групповой этап">𝐆</div>
+    </div>
+    <div class="footer-credit">
+        Developed by Snip & Qwen | Powered by Firebase 🌐
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWnLO_5YgaNFiy-wvynVEKcMnS8V55FXY",
+            authDomain: "moscow-m1x-draft-f9da4.firebaseapp.com",
+            databaseURL: "https://moscow-m1x-draft-f9da4-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "moscow-m1x-draft-f9da4",
+            storageBucket: "moscow-m1x-draft-f9da4.firebasestorage.app",
+            messagingSenderId: "391636730262",
+            appId: "1:391636730262:web:2441abb086b5336b451db7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        const draftRef = database.ref('moscowM1X/draft');
+        const groupStageRef = database.ref('moscowM1X/groupStage');
+        const adminsRef = database.ref('moscowM1X/admins');
+        let isAuthenticated = false;
+        let isAdmin = false;
+        let teamsFromDraft = [];
+        const groupsContent = document.getElementById('groupsContent');
+        let isSpinning = false;
+        let currentSelectedGroups = {};
+        async function loadTeamsFromDraft() {
+            const snapshot = await draftRef.once('value');
+            const draftData = snapshot.val();
+            if (draftData && draftData.captainsList && draftData.teamNamesMap) {
+                const captains = draftData.captainsList;
+                const teamNames = draftData.teamNamesMap;
+                teamsFromDraft = captains.map(captain => teamNames[captain] || captain);
+            } else {
+                teamsFromDraft = [];
+            }
+        }
+        function generateMatchesForGroup(groupName, teams) {
+            const matches = [];
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = i + 1; j < teams.length; j++) {
+                    matches.push({
+                        team1: teams[i],
+                        team2: teams[j],
+                        group: groupName,
+                        key: `${groupName}_${i}_${j}`,
+                        map: null,
+                        score1: null,
+                        score2: null,
+                        completed: false
+                    });
+                }
+            }
+            if (teams.length === 4) {
+                const sorted = [...teams].sort();
+                const [t0, t1, t2, t3] = sorted;
+                matches.forEach(match => {
+                    const pair = [match.team1, match.team2].sort();
+                    if ((pair[0] === t0 && pair[1] === t1) || (pair[0] === t2 && pair[1] === t3)) {
+                        match.round = 1;
+                    } else if ((pair[0] === t0 && pair[1] === t2) || (pair[0] === t1 && pair[1] === t3)) {
+                        match.round = 2;
+                    } else {
+                        match.round = 3;
+                    }
+                });
+            }
+            return matches;
+        }
+        function calculateStandings(groupName, teams, allMatches) {
+            const stats = {};
+            teams.forEach(team => {
+                stats[team] = {
+                    team,
+                    wins: 0,
+                    draws: 0,
+                    losses: 0,
+                    points: 0,
+                    played: 0,
+                    roundsWon: 0,
+                    roundsLost: 0
+                };
+            });
+            Object.values(allMatches).forEach(match => {
+                if (match.group !== groupName || !match.completed) return;
+                const { team1, team2, score1, score2 } = match;
+                stats[team1].played++;
+                stats[team2].played++;
+                stats[team1].roundsWon += score1;
+                stats[team1].roundsLost += score2;
+                stats[team2].roundsWon += score2;
+                stats[team2].roundsLost += score1;
+                if (score1 > score2) {
+                    stats[team1].wins++;
+                    stats[team1].points += 3;
+                    stats[team2].losses++;
+                } else if (score1 < score2) {
+                    stats[team2].wins++;
+                    stats[team2].points += 3;
+                    stats[team1].losses++;
+                } else {
+                    stats[team1].draws++;
+                    stats[team2].draws++;
+                    stats[team1].points += 1;
+                    stats[team2].points += 1;
+                }
+            });
+            Object.values(stats).forEach(stat => {
+                stat.roundDiff = stat.roundsWon - stat.roundsLost;
+            });
+            return Object.values(stats).sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                if (b.roundDiff !== a.roundDiff) return b.roundDiff - a.roundDiff;
+                return 0;
+            });
+        }
+        let groupStageData = {
+            isGroupStageActive: true,
+            groups: {},
+            matches: {}
+        };
+        function saveGroupStage() {
+            if (!isAuthenticated || !isAdmin) return;
+            groupStageRef.set(groupStageData);
+        }
+        function checkMatchCompletion(key) {
+            const match = groupStageData.matches[key];
+            const s1 = match.score1;
+            const s2 = match.score2;
+            const map = match.map;
+            if (s1 === null || s2 === null || map === null || map === '') {
+                match.completed = false;
+                return;
+            }
+            const isWin = (
+                (s1 === 16 && s2 >= 0 && s2 <= 14) ||
+                (s2 === 16 && s1 >= 0 && s1 <= 14)
+            );
+            const isDraw = (s1 === 15 && s2 === 15);
+            match.completed = isWin || isDraw;
+        }
+        function showRoulette() {
+            const existing = document.getElementById('rouletteContainer');
+            if (existing) existing.remove();
+            const container = document.createElement('div');
+            container.id = 'rouletteContainer';
+            container.innerHTML = `
+                <h3>🎯 ROULETTE</h3>
+                <button id="spinRouletteBtn">SPIN 🎯</button>
+                <div id="rouletteResult">...</div>
+            `;
+            document.body.appendChild(container);
+            document.getElementById('spinRouletteBtn').onclick = spinRoulette;
+        }
+        function spinRoulette() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const resultDiv = document.getElementById('rouletteResult');
+            const container = document.getElementById('rouletteContainer');
+            container.style.transform = 'translateY(-50%)';
+            resultDiv.textContent = 'Spinning...';
+            const assignedTeams = Object.values(currentSelectedGroups).flat();
+            const availableTeams = teamsFromDraft.filter(team => !assignedTeams.includes(team));
+            if (availableTeams.length === 0) {
+                resultDiv.textContent = 'All teams assigned!';
+                isSpinning = false;
+                return;
+            }
+            let spinCount = 0;
+            const maxSpins = 10 + Math.floor(Math.random() * 10);
+            const interval = setInterval(() => {
+                spinCount++;
+                const randomTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
+                resultDiv.textContent = randomTeam;
+                if (spinCount >= maxSpins) {
+                    clearInterval(interval);
+                    isSpinning = false;
+                    resultDiv.textContent = `🎉 ${randomTeam}`;
+                    resultDiv.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        resultDiv.style.transform = 'scale(1)';
+                    }, 300);
+                }
+            }, 100);
+        }
+        function renderMatchCard(groupName, match, hasRounds) {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            if (match.completed) card.style.opacity = '0.9';
+            if (hasRounds && match.round) {
+                const roundHeader = document.createElement('div');
+                roundHeader.className = 'match-card round-header';
+                roundHeader.textContent = `ROUND ${match.round}`;
+                card.appendChild(roundHeader);
+            }
+            const teamsDiv = document.createElement('div');
+            teamsDiv.className = 'match-teams';
+            teamsDiv.textContent = `${match.team1} vs ${match.team2}`;
+            card.appendChild(teamsDiv);
+            const mapSelect = document.createElement('select');
+            mapSelect.className = 'map-select';
+            const emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.textContent = '—';
+            emptyOpt.selected = match.map === null;
+            mapSelect.appendChild(emptyOpt);
+            const maps = ['de_dust2', 'de_inferno', 'de_nuke', 'de_tuscan', 'de_train'];
+            maps.forEach(map => {
+                const opt = document.createElement('option');
+                opt.value = map;
+                opt.textContent = map;
+                if (match.map === map) opt.selected = true;
+                mapSelect.appendChild(opt);
+            });
+            if (!isAdmin || !isAuthenticated) {
+                mapSelect.disabled = true;
+            } else {
+                mapSelect.onchange = () => {
+                    groupStageData.matches[match.key].map = mapSelect.value || null;
+                    checkMatchCompletion(match.key);
+                    saveGroupStage();
+                };
+            }
+            const score1Input = document.createElement('input');
+            score1Input.type = 'number';
+            score1Input.className = 'score-input';
+            score1Input.value = match.score1 !== null ? match.score1 : '';
+            score1Input.min = 0;
+            score1Input.max = 16;
+            if (!isAdmin || !isAuthenticated) {
+                score1Input.disabled = true;
+            } else {
+                score1Input.oninput = () => {
+                    let val = parseInt(score1Input.value);
+                    if (isNaN(val) || val < 0) return;
+                    if (val > 16) score1Input.value = 16;
+                };
+                score1Input.onchange = () => {
+                    const v = score1Input.value.trim();
+                    groupStageData.matches[match.key].score1 = v === '' ? null : parseInt(v);
+                    checkMatchCompletion(match.key);
+                    saveGroupStage();
+                };
+            }
+            const separator = document.createElement('span');
+            separator.className = 'score-separator';
+            separator.textContent = ':';
+            const score2Input = document.createElement('input');
+            score2Input.type = 'number';
+            score2Input.className = 'score-input';
+            score2Input.value = match.score2 !== null ? match.score2 : '';
+            score2Input.min = 0;
+            score2Input.max = 16;
+            if (!isAdmin || !isAuthenticated) {
+                score2Input.disabled = true;
+            } else {
+                score2Input.oninput = () => {
+                    let val = parseInt(score2Input.value);
+                    if (isNaN(val) || val < 0) return;
+                    if (val > 16) score2Input.value = 16;
+                };
+                score2Input.onchange = () => {
+                    const v = score2Input.value.trim();
+                    groupStageData.matches[match.key].score2 = v === '' ? null : parseInt(v);
+                    checkMatchCompletion(match.key);
+                    saveGroupStage();
+                };
+            }
+            const scoreGroup = document.createElement('div');
+            scoreGroup.className = 'match-control-group';
+            scoreGroup.appendChild(score1Input);
+            scoreGroup.appendChild(separator);
+            scoreGroup.appendChild(score2Input);
+            const mapGroup = document.createElement('div');
+            mapGroup.className = 'match-control-group';
+            const mapLabel = document.createElement('div');
+            mapLabel.style.fontSize = '0.9em';
+            mapLabel.textContent = 'Map:';
+            mapGroup.appendChild(mapLabel);
+            mapGroup.appendChild(mapSelect);
+            const controls = document.createElement('div');
+            controls.className = 'match-controls';
+            controls.appendChild(mapGroup);
+            controls.appendChild(scoreGroup);
+            card.appendChild(controls);
+            return card;
+        }
+        function renderGroupStagePage() {
+            groupsContent.innerHTML = '';
+            const container = document.createElement('div');
+            container.className = 'groups-container';
+            Object.keys(groupStageData.groups).forEach(groupName => {
+                const groupTeams = groupStageData.groups[groupName];
+                if (!groupTeams || groupTeams.length === 0) return;
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-box';
+                const title = document.createElement('div');
+                title.className = 'group-title-table';
+                title.textContent = `GROUP ${groupName}`;
+                groupDiv.appendChild(title);
+                const standings = calculateStandings(
+                    groupName,
+                    groupTeams,
+                    groupStageData.matches
+                );
+                const standingsTable = document.createElement('table');
+                standingsTable.className = 'standings-table';
+                standingsTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>TEAM</th>
+                            <th>M</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>+/-</th>
+                            <th>PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${standings.map((s, idx) => {
+                            const rankClass = idx === 0 ? 'rank-first' : (idx === 1 ? 'rank-second' : '');
+                            return `
+                                <tr class="${rankClass}">
+                                    <td>${s.team}</td>
+                                    <td>${s.played}</td>
+                                    <td>${s.wins}</td>
+                                    <td>${s.draws}</td>
+                                    <td>${s.losses}</td>
+                                    <td>${s.roundDiff}</td>
+                                    <td>${s.points}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                `;
+                const standingsWrapper = document.createElement('div');
+                standingsWrapper.className = 'standings-table-wrapper';
+                standingsWrapper.appendChild(standingsTable);
+                groupDiv.appendChild(standingsWrapper);
+                const groupMatches = Object.values(groupStageData.matches).filter(m => m.group === groupName);
+                const hasRounds = groupMatches.length > 0 && groupMatches.every(m => m.round !== undefined);
+                if (hasRounds) {
+                    const matchesTable = document.createElement('table');
+                    matchesTable.className = 'matches-table';
+                    matchesTable.innerHTML = '<thead><tr><th>ROUND</th><th>MATCH</th><th>MAP</th><th>SCORE</th></tr></thead><tbody></tbody>';
+                    const tbody = matchesTable.querySelector('tbody');
+                    for (let round = 1; round <= 3; round++) {
+                        const roundMatches = groupMatches.filter(m => m.round === round);
+                        roundMatches.forEach(match => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `<td>ROUND ${round}</td>`;
+                            const matchCell = document.createElement('td');
+                            matchCell.className = 'match-cell';
+                            matchCell.textContent = `${match.team1} vs ${match.team2}`;
+                            if (match.completed) matchCell.classList.add('completed');
+                            row.appendChild(matchCell);
+                            const mapCell = document.createElement('td');
+                            const mapSelect = document.createElement('select');
+                            mapSelect.className = 'map-select';
+                            const emptyOpt = document.createElement('option');
+                            emptyOpt.value = '';
+                            emptyOpt.textContent = '—';
+                            emptyOpt.selected = match.map === null;
+                            mapSelect.appendChild(emptyOpt);
+                            const maps = ['de_dust2', 'de_inferno', 'de_nuke', 'de_tuscan', 'de_train'];
+                            maps.forEach(map => {
+                                const opt = document.createElement('option');
+                                opt.value = map;
+                                opt.textContent = map;
+                                if (match.map === map) opt.selected = true;
+                                mapSelect.appendChild(opt);
+                            });
+                            if (!isAdmin || !isAuthenticated) {
+                                mapSelect.disabled = true;
+                            } else {
+                                mapSelect.onchange = () => {
+                                    groupStageData.matches[match.key].map = mapSelect.value || null;
+                                    checkMatchCompletion(match.key);
+                                    saveGroupStage();
+                                };
+                            }
+                            mapCell.appendChild(mapSelect);
+                            row.appendChild(mapCell);
+                            const scoreCell = document.createElement('td');
+                            scoreCell.style.display = 'flex';
+                            scoreCell.style.alignItems = 'center';
+                            scoreCell.style.justifyContent = 'center';
+                            scoreCell.style.gap = '4px';
+                            scoreCell.style.width = '100%';
+                            const score1Input = document.createElement('input');
+                            score1Input.type = 'number';
+                            score1Input.className = 'score-input';
+                            score1Input.value = match.score1 !== null ? match.score1 : '';
+                            score1Input.min = 0;
+                            score1Input.max = 16;
+                            if (!isAdmin || !isAuthenticated) {
+                                score1Input.disabled = true;
+                            } else {
+                                score1Input.oninput = () => {
+                                    let val = parseInt(score1Input.value);
+                                    if (isNaN(val) || val < 0) return;
+                                    if (val > 16) score1Input.value = 16;
+                                };
+                                score1Input.onchange = () => {
+                                    const v = score1Input.value.trim();
+                                    groupStageData.matches[match.key].score1 = v === '' ? null : parseInt(v);
+                                    checkMatchCompletion(match.key);
+                                    saveGroupStage();
+                                };
+                            }
+                            const separator = document.createElement('span');
+                            separator.className = 'score-separator';
+                            separator.textContent = ':';
+                            const score2Input = document.createElement('input');
+                            score2Input.type = 'number';
+                            score2Input.className = 'score-input';
+                            score2Input.value = match.score2 !== null ? match.score2 : '';
+                            score2Input.min = 0;
+                            score2Input.max = 16;
+                            if (!isAdmin || !isAuthenticated) {
+                                score2Input.disabled = true;
+                            } else {
+                                score2Input.oninput = () => {
+                                    let val = parseInt(score2Input.value);
+                                    if (isNaN(val) || val < 0) return;
+                                    if (val > 16) score2Input.value = 16;
+                                };
+                                score2Input.onchange = () => {
+                                    const v = score2Input.value.trim();
+                                    groupStageData.matches[match.key].score2 = v === '' ? null : parseInt(v);
+                                    checkMatchCompletion(match.key);
+                                    saveGroupStage();
+                                };
+                            }
+                            scoreCell.appendChild(score1Input);
+                            scoreCell.appendChild(separator);
+                            scoreCell.appendChild(score2Input);
+                            row.appendChild(scoreCell);
+                            tbody.appendChild(row);
+                        });
+                    }
+                    const tableWrapper = document.createElement('div');
+                    tableWrapper.className = 'matches-table-wrapper';
+                    tableWrapper.appendChild(matchesTable);
+                    groupDiv.appendChild(tableWrapper);
+                } else {
+                    const matchesTable = document.createElement('table');
+                    matchesTable.className = 'matches-table';
+                    matchesTable.innerHTML = '<thead><tr><th>MATCH</th><th>MAP</th><th>SCORE</th></tr></thead><tbody></tbody>';
+                    const tbody = matchesTable.querySelector('tbody');
+                    groupMatches.forEach(match => {
+                        const row = document.createElement('tr');
+                        const matchCell = document.createElement('td');
+                        matchCell.className = 'match-cell';
+                        matchCell.textContent = `${match.team1} vs ${match.team2}`;
+                        if (match.completed) matchCell.classList.add('completed');
+                        row.appendChild(matchCell);
+                        const mapCell = document.createElement('td');
+                        const mapSelect = document.createElement('select');
+                        mapSelect.className = 'map-select';
+                        const emptyOpt = document.createElement('option');
+                        emptyOpt.value = '';
+                        emptyOpt.textContent = '—';
+                        emptyOpt.selected = match.map === null;
+                        mapSelect.appendChild(emptyOpt);
+                        const maps = ['de_dust2', 'de_inferno', 'de_nuke', 'de_tuscan', 'de_train'];
+                        maps.forEach(map => {
+                            const opt = document.createElement('option');
+                            opt.value = map;
+                            opt.textContent = map;
+                            if (match.map === map) opt.selected = true;
+                            mapSelect.appendChild(opt);
+                        });
+                        if (!isAdmin || !isAuthenticated) {
+                            mapSelect.disabled = true;
+                        } else {
+                            mapSelect.onchange = () => {
+                                groupStageData.matches[match.key].map = mapSelect.value || null;
+                                checkMatchCompletion(match.key);
+                                saveGroupStage();
+                            };
+                        }
+                        mapCell.appendChild(mapSelect);
+                        row.appendChild(mapCell);
+                        const scoreCell = document.createElement('td');
+                        scoreCell.style.display = 'flex';
+                        scoreCell.style.alignItems = 'center';
+                        scoreCell.style.justifyContent = 'center';
+                        scoreCell.style.gap = '4px';
+                        scoreCell.style.width = '100%';
+                        const score1Input = document.createElement('input');
+                        score1Input.type = 'number';
+                        score1Input.className = 'score-input';
+                        score1Input.value = match.score1 !== null ? match.score1 : '';
+                        score1Input.min = 0;
+                        score1Input.max = 16;
+                        if (!isAdmin || !isAuthenticated) {
+                            score1Input.disabled = true;
+                        } else {
+                            score1Input.oninput = () => {
+                                let val = parseInt(score1Input.value);
+                                if (isNaN(val) || val < 0) return;
+                                if (val > 16) score1Input.value = 16;
+                            };
+                            score1Input.onchange = () => {
+                                const v = score1Input.value.trim();
+                                groupStageData.matches[match.key].score1 = v === '' ? null : parseInt(v);
+                                checkMatchCompletion(match.key);
+                                saveGroupStage();
+                            };
+                        }
+                        const separator = document.createElement('span');
+                        separator.className = 'score-separator';
+                        separator.textContent = ':';
+                        const score2Input = document.createElement('input');
+                        score2Input.type = 'number';
+                        score2Input.className = 'score-input';
+                        score2Input.value = match.score2 !== null ? match.score2 : '';
+                        score2Input.min = 0;
+                        score2Input.max = 16;
+                        if (!isAdmin || !isAuthenticated) {
+                            score2Input.disabled = true;
+                        } else {
+                            score2Input.oninput = () => {
+                                let val = parseInt(score2Input.value);
+                                if (isNaN(val) || val < 0) return;
+                                if (val > 16) score2Input.value = 16;
+                            };
+                            score2Input.onchange = () => {
+                                const v = score2Input.value.trim();
+                                groupStageData.matches[match.key].score2 = v === '' ? null : parseInt(v);
+                                checkMatchCompletion(match.key);
+                                saveGroupStage();
+                            };
+                        }
+                        scoreCell.appendChild(score1Input);
+                        scoreCell.appendChild(separator);
+                        scoreCell.appendChild(score2Input);
+                        row.appendChild(scoreCell);
+                        tbody.appendChild(row);
+                    });
+                    const tableWrapper = document.createElement('div');
+                    tableWrapper.className = 'matches-table-wrapper';
+                    tableWrapper.appendChild(matchesTable);
+                    groupDiv.appendChild(tableWrapper);
+                }
+                const cardsWrapper = document.createElement('div');
+                cardsWrapper.className = 'matches-cards-wrapper';
+                if (hasRounds) {
+                    for (let round = 1; round <= 3; round++) {
+                        const roundHeader = document.createElement('div');
+                        roundHeader.className = 'match-card round-header';
+                        roundHeader.textContent = `ROUND ${round}`;
+                        cardsWrapper.appendChild(roundHeader);
+                        const roundMatches = groupMatches.filter(m => m.round === round);
+                        roundMatches.forEach(match => {
+                            cardsWrapper.appendChild(renderMatchCard(groupName, match, true));
+                        });
+                    }
+                } else {
+                    groupMatches.forEach(match => {
+                        cardsWrapper.appendChild(renderMatchCard(groupName, match, false));
+                    });
+                }
+                groupDiv.appendChild(cardsWrapper);
+                container.appendChild(groupDiv);
+            });
+            groupsContent.appendChild(container);
+        }
+        function distributeTeamsIntoGroups(teams, numGroups) {
+            const groups = {};
+            const baseSize = Math.floor(teams.length / numGroups);
+            const remainder = teams.length % numGroups;
+            let index = 0;
+            for (let i = 0; i < numGroups; i++) {
+                const size = baseSize + (i < remainder ? 1 : 0);
+                const groupKey = String.fromCharCode(65 + i);
+                groups[groupKey] = teams.slice(index, index + size);
+                index += size;
+            }
+            return groups;
+        }
+        function renderSetupUI() {
+            groupsContent.innerHTML = '';
+            const div = document.createElement('div');
+            div.className = 'setup-ui';
+            div.innerHTML = `
+                <div class="setup-title">SETUP GROUPS</div>
+                <div class="mode-selector">
+                    <button class="mode-btn" data-mode="random">🎲 RANDOM</button>
+                    <button class="mode-btn active" data-mode="manual">✍️ MANUAL</button>
+                    <button class="mode-btn" data-mode="roulette">🎰 ROULETTE</button>
+                </div>
+                <div id="setupOptions" style="margin: 16px 0;">
+                    <label style="color: #66ffcc; display: block; margin-bottom: 8px; font-size: 1.1em;">Number of groups:</label>
+                    <input type="number" id="numGroupsInput" min="1" max="20" value="2" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(100,200,255,0.4); border-radius: 8px; color: white; font-family: 'Bebas Neue'; text-align: center; font-size: 1.2em;">
+                </div>
+                <div id="manualSetup" style="display:flex; flex-direction:column;">
+                    <div class="teams-list" id="availableTeams"></div>
+                    <div class="groups-setup" id="groupsSetup"></div>
+                </div>
+                <button class="confirm-btn" id="confirmGroups" disabled>CONFIRM GROUPS</button>
+            `;
+            const modeBtns = div.querySelectorAll('.mode-btn');
+            const setupOptions = div.querySelector('#setupOptions');
+            const manualSetup = div.querySelector('#manualSetup');
+            const numGroupsInput = div.querySelector('#numGroupsInput');
+            const groupsSetup = div.querySelector('#groupsSetup');
+            const confirmBtn = div.querySelector('#confirmGroups');
+            let currentMode = 'manual';
+            currentSelectedGroups = {};
+            let selectedGroups = currentSelectedGroups;
+            function updateGroupsUI() {
+                const numGroups = parseInt(numGroupsInput.value) || 2;
+                if (numGroups < 1) numGroupsInput.value = 1;
+                if (numGroups > 20) numGroupsInput.value = 20;
+                groupsSetup.innerHTML = '';
+                currentSelectedGroups = {};
+                selectedGroups = currentSelectedGroups;
+                for (let i = 0; i < numGroups; i++) {
+                    const groupKey = String.fromCharCode(65 + i);
+                    selectedGroups[groupKey] = [];
+                    const col = document.createElement('div');
+                    col.className = 'group-col';
+                    col.innerHTML = `
+                        <div class="group-title">GROUP ${groupKey}</div>
+                        <div class="group-teams" id="group-${groupKey}"></div>
+                    `;
+                    groupsSetup.appendChild(col);
+                }
+                if (currentMode === 'manual' || currentMode === 'roulette') {
+                    setTimeout(renderManualSetup, 0);
+                }
+            }
+            numGroupsInput.onchange = updateGroupsUI;
+            updateGroupsUI();
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMode = btn.dataset.mode;
+                    if (currentMode === 'manual') {
+                        setupOptions.style.display = 'block';
+                        manualSetup.style.display = 'flex';
+                        manualSetup.style.flexDirection = 'column';
+                        updateGroupsUI();
+                        const roulette = document.getElementById('rouletteContainer');
+                        if (roulette) roulette.remove();
+                    } else if (currentMode === 'random') {
+                        setupOptions.style.display = 'block';
+                        manualSetup.style.display = 'none';
+                        confirmBtn.disabled = false;
+                        const roulette = document.getElementById('rouletteContainer');
+                        if (roulette) roulette.remove();
+                    } else if (currentMode === 'roulette') {
+                        setupOptions.style.display = 'block';
+                        manualSetup.style.display = 'flex';
+                        manualSetup.style.flexDirection = 'column';
+                        updateGroupsUI();
+                        showRoulette();
+                    }
+                });
+            });
+            function renderManualSetup() {
+                const availableEl = div.querySelector('#availableTeams');
+                availableEl.innerHTML = '';
+                Object.keys(selectedGroups).forEach(key => {
+                    const el = document.getElementById(`group-${key}`);
+                    if (el) el.innerHTML = '';
+                    selectedGroups[key] = [];
+                });
+                let selectedTeam = null;
+                teamsFromDraft.forEach(team => {
+                    const item = document.createElement('div');
+                    item.className = 'team-item';
+                    item.textContent = team;
+                    item.dataset.team = team;
+                    item.onclick = () => {
+                        document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        selectedTeam = team;
+                    };
+                    availableEl.appendChild(item);
+                });
+                Object.keys(selectedGroups).forEach(groupKey => {
+                    const groupEl = document.getElementById(`group-${groupKey}`);
+                    if (!groupEl) return;
+                    const groupCol = groupEl.closest('.group-col');
+                    groupCol.style.cursor = 'pointer';
+                    groupCol.onclick = () => {
+                        if (!selectedTeam) {
+                            alert("Please select a team first!");
+                            return;
+                        }
+                        const maxPerGroup = Math.ceil(teamsFromDraft.length / Object.keys(selectedGroups).length);
+                        if (selectedGroups[groupKey].length >= maxPerGroup) {
+                            alert(`Group ${groupKey} is full (max ${maxPerGroup} teams).`);
+                            return;
+                        }
+                        Object.keys(selectedGroups).forEach(g => {
+                            if (selectedGroups[g].includes(selectedTeam)) {
+                                selectedGroups[g] = selectedGroups[g].filter(t => t !== selectedTeam);
+                                const oldGroupEl = document.getElementById(`group-${g}`);
+                                if (oldGroupEl) {
+                                    const existing = oldGroupEl.querySelector(`[data-team="${selectedTeam}"]`);
+                                    if (existing) existing.remove();
+                                }
+                                const orig = availableEl.querySelector(`[data-team="${selectedTeam}"]`);
+                                if (orig) orig.style.display = 'flex';
+                            }
+                        });
+                        selectedGroups[groupKey].push(selectedTeam);
+                        const clone = document.createElement('div');
+                        clone.className = 'group-team-item';
+                        clone.textContent = selectedTeam;
+                        clone.dataset.team = selectedTeam;
+                        clone.onclick = (e) => {
+                            e.stopPropagation();
+                            const teamName = clone.dataset.team;
+                            selectedGroups[groupKey] = selectedGroups[groupKey].filter(t => t !== teamName);
+                            clone.remove();
+                            const orig = availableEl.querySelector(`[data-team="${teamName}"]`);
+                            if (orig) {
+                                orig.style.display = 'flex';
+                                orig.classList.remove('selected');
+                            }
+                            selectedTeam = null;
+                            confirmBtn.disabled = Object.values(selectedGroups).flat().length !== teamsFromDraft.length;
+                        };
+                        groupEl.appendChild(clone);
+                        const orig = availableEl.querySelector(`[data-team="${selectedTeam}"]`);
+                        if (orig) {
+                            orig.style.display = 'none';
+                            orig.classList.remove('selected');
+                        }
+                        selectedTeam = null;
+                        const totalSelected = Object.values(selectedGroups).flat().length;
+                        confirmBtn.disabled = totalSelected !== teamsFromDraft.length;
+                    };
+                });
+                const totalSelected = Object.values(selectedGroups).flat().length;
+                confirmBtn.disabled = totalSelected !== teamsFromDraft.length;
+            }
+            confirmBtn.onclick = () => {
+                const roulette = document.getElementById('rouletteContainer');
+                if (roulette) roulette.remove();
+
+                let groups = {};
+                if (currentMode === 'random') {
+                    const numGroups = parseInt(numGroupsInput.value) || 2;
+                    const shuffled = [...teamsFromDraft].sort(() => Math.random() - 0.5);
+                    groups = distributeTeamsIntoGroups(shuffled, numGroups);
+                } else {
+                    groups = { ...selectedGroups };
+                }
+                const allMatches = {};
+                Object.keys(groups).forEach(g => {
+                    if (groups[g].length > 0) {
+                        const matches = generateMatchesForGroup(g, groups[g]);
+                        matches.forEach(m => {
+                            allMatches[m.key] = m;
+                        });
+                    }
+                });
+                groupStageData = {
+                    isGroupStageActive: true,
+                    groups,
+                    matches: allMatches
+                };
+                saveGroupStage();
+                renderGroupStagePage();
+            };
+            manualSetup.style.display = 'flex';
+            manualSetup.style.flexDirection = 'column';
+            groupsContent.appendChild(div);
+        }
+        async function checkAdminStatus(user) {
+            if (!user || !user.email) return false;
+            try {
+                const emailKey = user.email.replace('.', ',');
+                const snapshot = await adminsRef.child(emailKey).once('value');
+                return snapshot.exists();
+            } catch (error) {
+                return false;
+            }
+        }
+        async function init() {
+            await loadTeamsFromDraft();
+            if (teamsFromDraft.length < 2) {
+                groupsContent.innerHTML = `<div class="firebase-error">Draft not complete or invalid. Need at least 2 teams.</div>`;
+                return;
+            }
+            groupStageRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.groups && Object.keys(data.groups).length > 0) {
+                    groupStageData = {
+                        isGroupStageActive: data.isGroupStageActive !== false,
+                        groups: data.groups,
+                        matches: data.matches || {}
+                    };
+                    renderGroupStagePage();
+                } else {
+                    if (isAdmin && isAuthenticated) {
+                        renderSetupUI();
+                    } else {
+                        groupsContent.innerHTML = `<div class="loading">Waiting for admin to configure groups...</div>`;
+                    }
+                }
+            }, (error) => {
+                console.error("Firebase error:", error);
+                groupsContent.innerHTML = `<div class="firebase-error">Error: ${error.message}</div>`;
+            });
+        }
+        function resetGroupStage() {
+            if (!isAdmin) {
+                alert("Only admin can reset group stage.");
+                return;
+            }
+            if (confirm("Are you sure you want to reset the group stage? All match data will be lost.")) {
+                const roulette = document.getElementById('rouletteContainer');
+                if (roulette) roulette.remove();
+                groupStageRef.set({
+                    isGroupStageActive: false,
+                    groups: {},
+                    matches: {}
+                }).then(() => {
+                    alert("Group stage has been reset.");
+                    groupStageRef.once('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data && data.groups && Object.keys(data.groups).length > 0) {
+                            groupStageData = {
+                                isGroupStageActive: data.isGroupStageActive !== false,
+                                groups: data.groups,
+                                matches: data.matches || {}
+                            };
+                            renderGroupStagePage();
+                        } else {
+                            renderSetupUI();
+                        }
+                    });
+                }).catch(err => {
+                    console.error("Reset failed:", err);
+                    alert("Failed to reset group stage.");
+                });
+            }
+        }
+        auth.onAuthStateChanged(async (user) => {
+            isAuthenticated = !!user;
+            isAdmin = user ? await checkAdminStatus(user) : false;
+            init();
+            const resetBtn = document.getElementById('resetGroupsBtn');
+            if (resetBtn) {
+                resetBtn.style.display = (isAdmin && isAuthenticated) ? 'flex' : 'none';
+                resetBtn.onclick = resetGroupStage;
+            }
+        });
+        groupsContent.innerHTML = `<div class="loading">Loading...</div>`;
+    </script>
+</body>
+</html>
