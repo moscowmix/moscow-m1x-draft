@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Playoffs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/moscow-m1x-draft/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/moscow-m1x-draft/favicon.svg" />
+    <link rel="shortcut icon" href="/moscow-m1x-draft/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/moscow-m1x-draft/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Moscow-m1x-draft" />
+    <link rel="manifest" href="/moscow-m1x-draft/site.webmanifest" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 19px;
+            letter-spacing: 1.2px;
+            background: url('bg2.png') center center / cover fixed;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 16px 12px;
+        }
+        .back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
+            background: rgba(30, 40, 60, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffcc00;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            border: 1px solid rgba(255, 204, 0, 0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+        }
+        .back-btn:hover {
+            background: rgba(40, 50, 70, 0.9);
+            transform: translateY(-2px);
+        }
+        .bracket-header {
+            text-align: center;
+            margin: 20px 0 30px;
+            color: #ffcc00;
+            font-size: 2.4em;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+            letter-spacing: 2px;
+            padding-top: 20px;
+        }
+        .loading, .firebase-error {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.2em;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .loading {
+            color: #ffcc00;
+        }
+        .firebase-error {
+            background: rgba(80, 20, 20, 0.9);
+            color: #ff6666;
+            border-radius: 10px;
+            border: 1px solid #ff3333;
+        }
+        .bracket-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px 0;
+            align-items: center;
+        }
+        .bracket-section {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch; 
+            scroll-behavior: smooth;
+        }
+        .bracket-section::-webkit-scrollbar {
+            height: 6px;
+        }
+        .bracket-section::-webkit-scrollbar-thumb {
+            background: rgba(255, 204, 0, 0.4);
+            border-radius: 3px;
+        }
+        .bracket-cols {
+            display: flex;
+            gap: 40px;
+            min-width: fit-content;
+            padding: 0 12px;
+            margin: 0 auto; 
+        }
+        .bracket-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 240px;
+        }
+        .champion-box {
+            text-align: center;
+            background: linear-gradient(45deg, #4729ee, #2b57e9);
+            color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px auto;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 2em;
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff; }
+            to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; }
+        }
+        .footer-credit {
+            text-align: center;
+            margin-top: 70px;
+            padding: 10px 0;
+            font-size: 0.85em;
+            color: #777;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        @keyframes pulseArrow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes blinkBorder {
+            0%, 100% { box-shadow: 0 0 0 2px #ffcc00; }
+            50% { box-shadow: 0 0 0 4px rgba(255, 204, 0, 0.6); }
+        }
+        .match-box {
+            position: relative;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            background: rgba(20, 20, 40, 0.8);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .match-box.current-round {
+            animation: blinkBorder 1.5s infinite;
+        }
+        .match-title {
+            font-size: 1.2em;
+            color: #ffcc00;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .match-teams {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 1em;
+            overflow: hidden;
+        }
+        .team-name {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .team-score {
+            font-weight: bold;
+            min-width: 36px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .match-arrow {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffcc00;
+            font-size: 18px;
+        }
+        .match-box.completed .team-row.winner {
+            background: #ff6600;
+            color: white;
+        }
+        .match-box.completed .team-row.winner .team-score {
+            color: white;
+        }
+        .match-box.completed .team-row.loser {
+            background: #444;
+            color: #aaa;
+        }
+        .match-box.completed .team-row.loser .team-score {
+            color: #aaa;
+        }
+        .match-box:not(.completed) .team-row {
+            background: rgba(30, 30, 50, 0.7);
+        }
+        .match-box.final-match {
+            border-color: #ff6666;
+            background: rgba(40, 20, 20, 0.8);
+        }
+        .archive-btn {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            width: 50px;
+            height: 50px;
+            background: rgba(30, 60, 40, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #66ff66;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 1px solid rgba(100, 255, 100, 0.4);
+            z-index: 1000;
+            transition: all 0.25s;
+        }
+        .archive-btn:hover {
+            background: rgba(40, 80, 50, 0.9);
+            transform: translateY(-3px);
+            color: #aaffaa;
+        }
+        .archive-btn:active {
+            transform: translateY(0);
+        }
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+                padding: 8px 6px;
+                letter-spacing: 0.8px;
+            }
+            .bracket-header {
+                font-size: 1.5em;
+                margin: 10px 0 16px;
+                letter-spacing: 1px;
+            }
+            .bracket-col {
+                min-width: 110px;
+                gap: 12px;
+            }
+            .bracket-cols {
+                gap: 14px;
+                padding: 0 12px;
+            }
+            .match-box {
+                padding: 7px;
+                font-size: 0.92em;
+            }
+            .match-title {
+                font-size: 0.95em;
+                margin-bottom: 5px;
+            }
+            .team-row {
+                padding: 4px;
+                font-size: 0.88em;
+            }
+            .team-name {
+                font-size: 0.85em;
+            }
+            .team-score {
+                min-width: 26px;
+                font-size: 0.92em;
+            }
+            .champion-box {
+                padding: 14px;
+                font-size: 1.2em;
+            }
+            .back-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+                top: 8px;
+                left: 8px;
+            }
+        }
+        @media (max-width: 480px) {
+            .bracket-col {
+                min-width: 100px;
+            }
+            .bracket-cols {
+                gap: 12px;
+            }
+            body {
+                font-size: 13px;
+            }
+            .match-box {
+                padding: 6px;
+            }
+            .team-row {
+                padding: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn" title="Назад к драфту">←</a>
+    <h1 class="bracket-header">PLAYOFFS</h1>
+    <div id="bracketContent">
+        <div class="loading">Loading playoff bracket...</div>
+    </div>
+    <div class="archive-btn" id="archiveBtn" title="Архивировать результаты турнира">✔️</div>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWnLO_5YgaNFiy-wvynVEKcMnS8V55FXY",
+            authDomain: "moscow-m1x-draft-f9da4.firebaseapp.com",
+            databaseURL: "https://moscow-m1x-draft-f9da4-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "moscow-m1x-draft-f9da4",
+            storageBucket: "moscow-m1x-draft-f9da4.firebasestorage.app",
+            messagingSenderId: "391636730262",
+            appId: "1:391636730262:web:2441abb086b5336b451db7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        const groupStageRef = database.ref('moscowM1X/groupStage');
+        const playoffRef = database.ref('moscowM1X/playoffBracket');
+        const configRef = database.ref('moscowM1X/config');
+        const draftRef = database.ref('moscowM1X/draft');
+        const tournamentsRef = database.ref('moscowM1X/tournaments');
+        let CAPTAINS = [];
+        let TEAM_NAMES = {};
+        let isAuthenticated = false;
+        let isAdmin = false;
+        let standings = null;
+        const bracketContent = document.getElementById('bracketContent');
+        let playoffDataGlobal = null;
+        const MATCH_STRUCTURE = [
+            { id: 'M1', round: 'Upper R1', teams: ['A1', 'B2'], nextWin: 'M8', nextLose: 'M5' },
+            { id: 'M2', round: 'Upper R1', teams: ['B1', 'A2'], nextWin: 'M8', nextLose: 'M6' },
+            { id: 'M8', round: 'Upper SF', teams: ['M1', 'M2'], nextWin: 'M10', nextLose: 'M9' },
+            { id: 'M3', round: 'Lower R1', teams: ['B4', 'A3'], nextWin: 'M5', nextLose: null },
+            { id: 'M4', round: 'Lower R1', teams: ['A4', 'B3'], nextWin: 'M6', nextLose: null },
+            { id: 'M5', round: 'Lower R2', teams: ['M3', 'M2_L'], nextWin: 'M7', nextLose: null }, 
+            { id: 'M6', round: 'Lower R2', teams: ['M4', 'M1_L'], nextWin: 'M7', nextLose: null }, 
+            { id: 'M7', round: 'Lower R3', teams: ['M5', 'M6'], nextWin: 'M9', nextLose: null },
+            { id: 'M9', round: 'Lower R4', teams: ['M7', 'M8_L'], nextWin: 'M10', nextLose: null },
+            { id: 'M10', round: 'Grand Final', teams: ['M8', 'M9'], isFinal: true },
+            { id: 'M11', round: 'Grand Final (if needed)', teams: ['M8', 'M9'], isFinal: true, isSecond: true }
+        ];
+        function normalizeTeamName(name) {
+            return (name || '').toLowerCase().trim();
+        }
+        function calculateFinalStandings(playoffData, TEAM_NAMES, CAPTAINS, groupStandings) {
+            const matches = playoffData.matches || {};
+            const standings = [];
+            if (matches['M11']?.completed) {
+                standings[0] = matches['M11'].winner;
+            } else if (matches['M10']?.completed) {
+                standings[0] = matches['M10'].winner;
+            }
+            if (matches['M11']?.completed) {
+                standings[1] = matches['M11'].loser;
+            } else if (matches['M10']?.completed) {
+                standings[1] = matches['M10'].loser;
+            }
+            if (matches['M9']?.completed) {
+                standings[2] = matches['M9'].loser;
+            }
+            if (matches['M7']?.completed) {
+                standings[3] = matches['M7'].loser;
+            }
+            if (matches['M5']?.completed) {
+                standings[4] = matches['M5'].loser;
+            }
+            if (matches['M6']?.completed) {
+                standings[5] = matches['M6'].loser;
+            }
+            if (matches['M3']?.completed) {
+                standings[6] = matches['M3'].loser;
+            }
+            if (matches['M4']?.completed) {
+                standings[7] = matches['M4'].loser;
+            }
+            const pos = {
+                'A1': groupStandings?.A?.[0] || '—',
+                'A2': groupStandings?.A?.[1] || '—',
+                'A3': groupStandings?.A?.[2] || '—',
+                'A4': groupStandings?.A?.[3] || '—',
+                'B1': groupStandings?.B?.[0] || '—',
+                'B2': groupStandings?.B?.[1] || '—',
+                'B3': groupStandings?.B?.[2] || '—',
+                'B4': groupStandings?.B?.[3] || '—'
+            };
+            function resolve(id) {
+                if (!id || id === '—') return '—';
+                if (TEAM_NAMES[id]) return TEAM_NAMES[id];
+                if (CAPTAINS.includes(id)) return TEAM_NAMES[id] || id;
+                if (id.length === 2 && ['A','B'].includes(id[0]) && !isNaN(id[1])) {
+                    const captain = pos[id];
+                    return TEAM_NAMES[captain] || captain || '—';
+                }
+                if (id.endsWith('_L')) {
+                    const matchId = id.slice(0, -2);
+                    const match = matches[matchId];
+                    if (match && match.completed && match.loser) {
+                        return resolve(match.loser);
+                    }
+                    return '—';
+                }
+                if (id.startsWith('M') && matches[id] && matches[id].completed) {
+                    return resolve(matches[id].winner || matches[id].loser || '—');
+                }
+                return id;
+            }
+            return standings.map(id => resolve(id));
+        }
+        async function archiveCurrentTournament() {
+            if (!isAdmin) return;
+            if (!confirm("Архивировать текущие результаты турнира?\nЭто действие нельзя отменить.")) return;
+            try {
+                const draftSnapshot = await draftRef.once('value');
+                const draftData = draftSnapshot.val();
+                if (!draftData || !draftData.draftComplete) {
+                    alert("Драфт не завершён. Архивация невозможна.");
+                    return;
+                }
+                const playoffSnapshot = await playoffRef.once('value');
+                const playoffData = playoffSnapshot.val() || { champion: null, matches: {} };
+                const configSnapshot = await configRef.once('value');
+                const config = configSnapshot.val() || {};
+                const TEAM_NAMES = config.teams || {};
+                const teamsMap = {};
+                draftData.captainsList.forEach((captain, idx) => {
+                    const teamName = TEAM_NAMES[captain] || captain;
+                    const normalized = normalizeTeamName(teamName);
+                    const players = draftData.teams[idx] || [];
+                    teamsMap[normalized] = {
+                        captain: captain,
+                        players: [captain, ...players]
+                    };
+                });
+                const finalStandings = calculateFinalStandings(
+                    playoffData,
+                    TEAM_NAMES,
+                    draftData.captainsList,
+                    standings
+                ).map(normalizeTeamName);
+                if (finalStandings.every(t => t === '—')) {
+                    alert("❌ Не удалось определить места. Убедитесь, что все матчи завершены.");
+                    return;
+                }
+                const timestamp = new Date().toISOString();
+                const dateStr = new Date().toISOString().split('T')[0];
+                const archiveEntry = {
+                    name: `Moscow M1x — ${dateStr}`,
+                    createdAt: timestamp,
+                    champion: playoffData.champion ? normalizeTeamName(playoffData.champion) : null,
+                    standings: finalStandings,
+                    teams: teamsMap
+                };
+                await tournamentsRef.child(Date.now().toString()).set(archiveEntry);
+                alert("✅ Турнир успешно архивирован!");
+            } catch (err) {
+                console.error("Ошибка архивации:", err);
+                alert("❌ Ошибка при архивации турнира. Проверьте консоль.");
+            }
+        }
+        function updateArchiveButtonVisibility() {
+            const btn = document.getElementById('archiveBtn');
+            if (!btn) return;
+            if (isAdmin && isAuthenticated && playoffDataGlobal?.champion) {
+                btn.style.display = 'flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+        async function loadConfigForPlayoff() {
+            try {
+                const snapshot = await configRef.once('value');
+                const config = snapshot.val();
+                if (config) {
+                    if (Array.isArray(config.captains)) CAPTAINS = [...config.captains];
+                    if (typeof config.teams === 'object') TEAM_NAMES = { ...config.teams };
+                }
+            } catch (e) {
+                console.warn("Could not load config for playoff");
+            }
+        }
+        function getTeamName(captain) {
+            return TEAM_NAMES[captain] || captain;
+        }
+        function loadStandingsFromSnapshot(snapshot) {
+            const data = snapshot.val();
+            if (!data || !data.isGroupStageActive) return null;
+            const standings = {};
+            ['A', 'B'].forEach(group => {
+                const teams = data.groups[group] || [];
+                const matches = data.matches || {};
+                const stats = {};
+                teams.forEach(t => {
+                    stats[t] = { team: t, wins: 0, points: 0, played: 0, roundsWon: 0, roundsLost: 0 };
+                });
+                Object.values(matches).forEach(m => {
+                    if (m.group !== group || !m.completed) return;
+                    const { team1, team2, score1, score2 } = m;
+                    stats[team1].played++; stats[team2].played++;
+                    stats[team1].roundsWon += score1; stats[team1].roundsLost += score2;
+                    stats[team2].roundsWon += score2; stats[team2].roundsLost += score1;
+                    if (score1 > score2) { stats[team1].wins++; stats[team1].points += 3; }
+                    else if (score2 > score1) { stats[team2].wins++; stats[team2].points += 3; }
+                    else { stats[team1].points++; stats[team2].points++; }
+                });
+                Object.values(stats).forEach(s => s.roundDiff = s.roundsWon - s.roundsLost);
+                standings[group] = Object.values(stats).sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.wins !== a.wins) return b.wins - a.wins;
+                    return b.roundDiff - a.roundDiff;
+                }).map(s => s.team);
+            });
+            return standings;
+        }
+        function resolveTeamName(identifier, playoffData, pos) {
+            if (!identifier || identifier === '—') return '—';
+            if (typeof identifier === 'string' && identifier.length === 2) {
+                const group = identifier[0];
+                const num = identifier[1];
+                if (['A','B'].includes(group) && !isNaN(num)) {
+                    return pos[identifier] || '—';
+                }
+            }
+            if (typeof identifier === 'string' && identifier.endsWith('_L')) {
+                const matchId = identifier.slice(0, -2);
+                if (playoffData.matches[matchId]) {
+                    const match = playoffData.matches[matchId];
+                    if (match.completed && match.loser) {
+                        return resolveTeamName(match.loser, playoffData, pos);
+                    }
+                    return '—';
+                }
+            }
+            if (typeof identifier === 'string' && playoffData.matches[identifier]) {
+                const match = playoffData.matches[identifier];
+                if (match.completed && match.winner) {
+                    return resolveTeamName(match.winner, playoffData, pos);
+                }
+                return '—';
+            }
+            return identifier;
+        }
+        function getBracketSource(matchId) {
+            if (['M1', 'M2', 'M8'].includes(matchId)) return 'upper';
+            if (['M3', 'M4', 'M5', 'M6', 'M7', 'M9'].includes(matchId)) return 'lower';
+            return 'unknown';
+        }
+        function getBracketSourceForTeam(teamId, playoffData) {
+            if (teamId.length === 2 && ['A','B'].includes(teamId[0]) && !isNaN(teamId[1])) {
+                return 'upper';
+            }
+            if (teamId.endsWith('_L')) {
+                const baseMatchId = teamId.slice(0, -2);
+                const baseMatch = playoffData.matches[baseMatchId];
+                if (baseMatch && baseMatch.sourceBracket === 'upper') {
+                    return 'lower';
+                }
+            }
+            if (teamId.startsWith('M')) {
+                const match = playoffData.matches[teamId];
+                if (match) return match.sourceBracket || 'unknown';
+            }
+            return 'unknown';
+        }
+        function findFirstIncompleteMatch(playoffData) {
+            for (const m of MATCH_STRUCTURE) {
+                const match = playoffData.matches[m.id];
+                if (!match || !match.completed) return m.id;
+            }
+            return null;
+        }
+        function renderBracket(playoffData, standings) {
+            playoffDataGlobal = playoffData;
+            updateArchiveButtonVisibility();
+            if (!standings) {
+                bracketContent.innerHTML = '<div class="firebase-error">Group stage not completed yet.</div>';
+                return;
+            }
+            const pos = {
+                'A1': getTeamName(standings.A[0]),
+                'A2': getTeamName(standings.A[1]),
+                'A3': getTeamName(standings.A[2]),
+                'A4': getTeamName(standings.A[3]),
+                'B1': getTeamName(standings.B[0]),
+                'B2': getTeamName(standings.B[1]),
+                'B3': getTeamName(standings.B[2]),
+                'B4': getTeamName(standings.B[3])
+            };
+            const container = document.createElement('div');
+            container.className = 'bracket-container';
+            const firstIncomplete = findFirstIncompleteMatch(playoffData);
+            const upperSection = document.createElement('div');
+            upperSection.className = 'bracket-section';
+            const upperCols = [
+                { matches: ['M1', 'M2'] },
+                { matches: ['M8'] },
+                { matches: ['M10', 'M11'] }
+            ];
+            const upperColsWrapper = document.createElement('div');
+            upperColsWrapper.className = 'bracket-cols';
+            upperCols.forEach(col => {
+                const colEl = createColumn(col.matches, playoffData, pos, 'upper', firstIncomplete);
+                upperColsWrapper.appendChild(colEl);
+            });
+            upperSection.appendChild(upperColsWrapper);
+            container.appendChild(upperSection);
+            const lowerSection = document.createElement('div');
+            lowerSection.className = 'bracket-section';
+            const lowerCols = [
+                { matches: ['M3', 'M4'] },
+                { matches: ['M5', 'M6'] },
+                { matches: ['M7'] },
+                { matches: ['M9'] }
+            ];
+            const lowerColsWrapper = document.createElement('div');
+            lowerColsWrapper.className = 'bracket-cols';
+            lowerCols.forEach(col => {
+                const colEl = createColumn(col.matches, playoffData, pos, 'lower', firstIncomplete);
+                lowerColsWrapper.appendChild(colEl);
+            });
+            lowerSection.appendChild(lowerColsWrapper);
+            container.appendChild(lowerSection);
+            const championBox = document.createElement('div');
+            championBox.className = 'champion-box';
+            if (playoffData.champion) {
+                championBox.innerHTML = `<h2>🏆 1ST PLACE</h2><p>${playoffData.champion}</p>`;
+            } else {
+                championBox.innerHTML = `<h2>🏆 1ST PLACE</h2><p>—</p>`;
+            }
+            container.appendChild(championBox);
+            const footer = document.createElement('div');
+            footer.className = 'footer-credit';
+            footer.innerHTML = 'Developed by Snip & Qwen | Powered by Firebase 🌐';
+            container.appendChild(footer);
+            bracketContent.innerHTML = '';
+            bracketContent.appendChild(container);
+        }
+        function createColumn(matchIds, playoffData, pos, bracketType, firstIncomplete) {
+            const col = document.createElement('div');
+            col.className = 'bracket-col';
+            matchIds.forEach(id => {
+                const matchDef = MATCH_STRUCTURE.find(m => m.id === id);
+                if (!matchDef) return;
+                const match = playoffData.matches[id] || {
+                    team1: matchDef.teams[0],
+                    team2: matchDef.teams[1],
+                    map: null,
+                    score1: null,
+                    score2: null,
+                    completed: false,
+                    winner: null,
+                    loser: null,
+                    sourceBracket: bracketType
+                };
+                const t1 = resolveTeamName(match.team1, playoffData, pos);
+                const t2 = resolveTeamName(match.team2, playoffData, pos);
+                const box = document.createElement('div');
+                box.className = 'match-box';
+                if (match.completed) box.classList.add('completed');
+                if (matchDef.isFinal) box.classList.add('final-match');
+                if (id === firstIncomplete) box.classList.add('current-round');
+                const title = document.createElement('div');
+                title.className = 'match-title';
+                title.textContent = matchDef.round;
+                const teamsDiv = document.createElement('div');
+                teamsDiv.className = 'match-teams';
+                const team1Container = document.createElement('div');
+                team1Container.className = 'team-row';
+                if (match.completed && match.winner === match.team1) {
+                    team1Container.classList.add('winner');
+                } else if (match.completed) {
+                    team1Container.classList.add('loser');
+                }
+                const team1Name = document.createElement('span');
+                team1Name.className = 'team-name';
+                team1Name.textContent = t1 || '—';
+                const score1Span = document.createElement('span');
+                score1Span.className = 'team-score';
+                score1Span.textContent = match.score1 !== null ? match.score1 : '—';
+                team1Container.appendChild(team1Name);
+                team1Container.appendChild(score1Span);
+                const team2Container = document.createElement('div');
+                team2Container.className = 'team-row';
+                if (match.completed && match.winner === match.team2) {
+                    team2Container.classList.add('winner');
+                } else if (match.completed) {
+                    team2Container.classList.add('loser');
+                }
+                const team2Name = document.createElement('span');
+                team2Name.className = 'team-name';
+                team2Name.textContent = t2 || '—';
+                const score2Span = document.createElement('span');
+                score2Span.className = 'team-score';
+                score2Span.textContent = match.score2 !== null ? match.score2 : '—';
+                team2Container.appendChild(team2Name);
+                team2Container.appendChild(score2Span);
+                teamsDiv.appendChild(team1Container);
+                teamsDiv.appendChild(team2Container);
+                if (matchDef.nextWin) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'match-arrow';
+                    arrow.innerHTML = '→';
+                    if (match.completed) {
+                        arrow.style.animation = 'pulseArrow 1.2s infinite';
+                    }
+                    box.appendChild(arrow);
+                }
+                box.appendChild(title);
+                box.appendChild(teamsDiv);
+                box.dataset.matchId = id;
+                box.addEventListener('click', () => openMatchModal(id, playoffData, pos));
+                col.appendChild(box);
+            });
+            return col;
+        }
+        function openMatchModal(matchId, playoffData, pos) {
+            const match = playoffData.matches[matchId];
+            const t1 = resolveTeamName(match.team1, playoffData, pos);
+            const t2 = resolveTeamName(match.team2, playoffData, pos);
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.background = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '2000';
+            modal.style.padding = '20px';
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+            const content = document.createElement('div');
+            content.style.background = 'rgba(20, 20, 40, 0.9)';
+            content.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            content.style.borderRadius = '12px';
+            content.style.padding = '20px';
+            content.style.maxWidth = 'min(400px, 90vw)';
+            content.style.width = '100%';
+            content.style.color = '#e0e0e0';
+            content.style.transform = 'scale(0.95)';
+            content.style.transition = 'transform 0.3s ease';
+            setTimeout(() => { content.style.transform = 'scale(1)'; }, 10);
+            const title = document.createElement('h3');
+            title.style.color = '#ffcc00';
+            title.style.marginBottom = '15px';
+            title.textContent = `Матч ${matchId}`;
+            const form = document.createElement('div');
+            form.style.display = 'flex';
+            form.style.flexDirection = 'column';
+            form.style.gap = '10px';
+            const team1Row = document.createElement('div');
+            team1Row.style.display = 'flex';
+            team1Row.style.alignItems = 'center';
+            team1Row.style.gap = '10px';
+            team1Row.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${t1}</span>`;
+            const score1Span = document.createElement('span');
+            score1Span.style.fontWeight = 'bold';
+            score1Span.style.minWidth = '40px';
+            score1Span.style.textAlign = 'center';
+            score1Span.style.fontSize = '1.1em';
+            score1Span.textContent = match.score1 !== null ? match.score1 : '—';
+            team1Row.appendChild(score1Span);
+            const team2Row = document.createElement('div');
+            team2Row.style.display = 'flex';
+            team2Row.style.alignItems = 'center';
+            team2Row.style.gap = '10px';
+            team2Row.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${t2}</span>`;
+            const score2Span = document.createElement('span');
+            score2Span.style.fontWeight = 'bold';
+            score2Span.style.minWidth = '40px';
+            score2Span.style.textAlign = 'center';
+            score2Span.style.fontSize = '1.1em';
+            score2Span.textContent = match.score2 !== null ? match.score2 : '—';
+            team2Row.appendChild(score2Span);
+            const mapLabel = document.createElement('div');
+            mapLabel.style.fontSize = '0.9em';
+            mapLabel.style.color = '#aaa';
+            mapLabel.innerHTML = `<strong>Карта:</strong> ${match.map || '—'}`;
+            const btnContainer = document.createElement('div');
+            btnContainer.style.display = 'flex';
+            btnContainer.style.gap = '10px';
+            btnContainer.style.marginTop = '15px';
+            const closeBtn = document.createElement('button');
+            closeBtn.style.background = 'rgba(255, 204, 0, 0.1)';
+            closeBtn.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            closeBtn.style.borderRadius = '6px';
+            closeBtn.style.color = '#ffcc00';
+            closeBtn.style.padding = '8px 16px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.flex = '1';
+            closeBtn.style.transition = 'background 0.2s';
+            closeBtn.textContent = 'Закрыть';
+            closeBtn.onmouseenter = () => { closeBtn.style.background = 'rgba(255, 204, 0, 0.2)'; };
+            closeBtn.onmouseleave = () => { closeBtn.style.background = 'rgba(255, 204, 0, 0.1)'; };
+            closeBtn.onclick = () => {
+                content.style.transform = 'scale(0.95)';
+                modal.style.opacity = '0';
+                setTimeout(() => { modal.remove(); }, 300);
+            };
+            if (isAdmin && isAuthenticated) {
+                const editBtn = document.createElement('button');
+                editBtn.style.background = 'rgba(255, 204, 0, 0.2)';
+                editBtn.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+                editBtn.style.borderRadius = '6px';
+                editBtn.style.color = '#ffcc00';
+                editBtn.style.padding = '8px 16px';
+                editBtn.style.cursor = 'pointer';
+                editBtn.style.flex = '1';
+                editBtn.style.transition = 'background 0.2s';
+                editBtn.textContent = 'Редактировать';
+                editBtn.onmouseenter = () => { editBtn.style.background = 'rgba(255, 204, 0, 0.3)'; };
+                editBtn.onmouseleave = () => { editBtn.style.background = 'rgba(255, 204, 0, 0.2)'; };
+                editBtn.onclick = () => {
+                    content.style.transform = 'scale(0.95)';
+                    modal.style.opacity = '0';
+                    setTimeout(() => {
+                        modal.remove();
+                        openEditModal(matchId, playoffData, pos);
+                    }, 300);
+                };
+                btnContainer.appendChild(editBtn);
+            }
+            btnContainer.appendChild(closeBtn);
+            form.appendChild(team1Row);
+            form.appendChild(team2Row);
+            form.appendChild(mapLabel);
+            form.appendChild(btnContainer);
+            content.appendChild(title);
+            content.appendChild(form);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+        function openEditModal(matchId, playoffData, pos) {
+            const match = playoffData.matches[matchId];
+            const t1 = resolveTeamName(match.team1, playoffData, pos);
+            const t2 = resolveTeamName(match.team2, playoffData, pos);
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.background = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '2000';
+            modal.style.padding = '20px';
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+            const content = document.createElement('div');
+            content.style.background = 'rgba(20, 20, 40, 0.9)';
+            content.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            content.style.borderRadius = '12px';
+            content.style.padding = '20px';
+            content.style.maxWidth = 'min(400px, 90vw)';
+            content.style.width = '100%';
+            content.style.color = '#e0e0e0';
+            content.style.transform = 'scale(0.95)';
+            content.style.transition = 'transform 0.3s ease';
+            setTimeout(() => { content.style.transform = 'scale(1)'; }, 10);
+            const title = document.createElement('h3');
+            title.style.color = '#ffcc00';
+            title.style.marginBottom = '15px';
+            title.textContent = `Редактировать матч ${matchId}`;
+            const form = document.createElement('div');
+            form.style.display = 'flex';
+            form.style.flexDirection = 'column';
+            form.style.gap = '10px';
+            const team1Row = document.createElement('div');
+            team1Row.style.display = 'flex';
+            team1Row.style.alignItems = 'center';
+            team1Row.style.gap = '10px';
+            team1Row.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${t1}</span>`;
+            const score1Input = document.createElement('input');
+            score1Input.type = 'number';
+            score1Input.min = '0';
+            score1Input.value = match.score1 !== null ? match.score1 : '';
+            score1Input.style.width = '60px';
+            score1Input.style.background = 'rgba(30, 30, 50, 0.8)';
+            score1Input.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            score1Input.style.borderRadius = '4px';
+            score1Input.style.color = 'white';
+            score1Input.style.padding = '4px';
+            team1Row.appendChild(score1Input);
+            const team2Row = document.createElement('div');
+            team2Row.style.display = 'flex';
+            team2Row.style.alignItems = 'center';
+            team2Row.style.gap = '10px';
+            team2Row.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${t2}</span>`;
+            const score2Input = document.createElement('input');
+            score2Input.type = 'number';
+            score2Input.min = '0';
+            score2Input.value = match.score2 !== null ? match.score2 : '';
+            score2Input.style.width = '60px';
+            score2Input.style.background = 'rgba(30, 30, 50, 0.8)';
+            score2Input.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            score2Input.style.borderRadius = '4px';
+            score2Input.style.color = 'white';
+            score2Input.style.padding = '4px';
+            team2Row.appendChild(score2Input);
+            const mapSelect = document.createElement('select');
+            mapSelect.style.width = '100%';
+            mapSelect.style.background = 'rgba(30, 30, 50, 0.8)';
+            mapSelect.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            mapSelect.style.borderRadius = '4px';
+            mapSelect.style.color = 'white';
+            mapSelect.style.padding = '6px';
+            mapSelect.innerHTML = '<option value="">—</option><option value="de_dust2">de_dust2</option><option value="de_inferno">de_inferno</option><option value="de_nuke">de_nuke</option><option value="de_tuscan">de_tuscan</option><option value="de_train">de_train</option>';
+            if (match.map) mapSelect.value = match.map;
+            const saveBtn = document.createElement('button');
+            saveBtn.style.background = 'rgba(255, 204, 0, 0.2)';
+            saveBtn.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            saveBtn.style.borderRadius = '6px';
+            saveBtn.style.color = '#ffcc00';
+            saveBtn.style.padding = '8px 16px';
+            saveBtn.style.cursor = 'pointer';
+            saveBtn.style.marginTop = '10px';
+            saveBtn.style.transition = 'background 0.2s';
+            saveBtn.textContent = 'Сохранить';
+            saveBtn.onmouseenter = () => { saveBtn.style.background = 'rgba(255, 204, 0, 0.3)'; };
+            saveBtn.onmouseleave = () => { saveBtn.style.background = 'rgba(255, 204, 0, 0.2)'; };
+            saveBtn.onclick = () => {
+                const s1Raw = score1Input.value.trim();
+                const s2Raw = score2Input.value.trim();
+                const s1 = s1Raw === '' ? null : Number(s1Raw);
+                const s2 = s2Raw === '' ? null : Number(s2Raw);
+                const map = mapSelect.value || null;
+                let winner = null;
+                let loser = null;
+                let completed = false;
+
+                if (
+                    s1 !== null &&
+                    s2 !== null &&
+                    map !== null &&
+                    isFinite(s1) &&
+                    isFinite(s2) &&
+                    s1 >= 0 &&
+                    s2 >= 0
+                ) {
+                    completed = true;
+                    if (s1 > s2) {
+                        winner = match.team1;
+                        loser = match.team2;
+                    } else if (s2 > s1) {
+                        winner = match.team2;
+                        loser = match.team1;
+                    }
+                }
+
+                playoffData.matches[matchId] = {
+                    team1: match.team1,
+                    team2: match.team2,
+                    map,
+                    score1: s1,
+                    score2: s2,
+                    completed,
+                    winner: winner,
+                    loser: loser,
+                    sourceBracket: getBracketSource(matchId)
+                };
+
+                if (matchId === 'M10' && completed && winner) {
+                    const winnerSource = getBracketSourceForTeam(winner, playoffData);
+                    if (winnerSource === 'upper') {
+                        playoffData.champion = resolveTeamName(winner, playoffData, pos);
+                        playoffRef.child('champion').set(playoffData.champion);
+                    } else {
+                        delete playoffData.champion;
+                        playoffRef.child('champion').remove();
+                    }
+                }
+                if (matchId === 'M11' && completed && winner) {
+                    playoffData.champion = resolveTeamName(winner, playoffData, pos);
+                    playoffRef.child('champion').set(playoffData.champion);
+                }
+
+                playoffRef.set(playoffData);
+                content.style.transform = 'scale(0.95)';
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    modal.remove();
+                    renderBracket(playoffData, standings);
+                }, 300);
+            };
+            const closeBtn = document.createElement('button');
+            closeBtn.style.background = 'rgba(255, 204, 0, 0.1)';
+            closeBtn.style.border = '1px solid rgba(255, 204, 0, 0.4)';
+            closeBtn.style.borderRadius = '6px';
+            closeBtn.style.color = '#ffcc00';
+            closeBtn.style.padding = '8px 16px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.marginTop = '10px';
+            closeBtn.style.transition = 'background 0.2s';
+            closeBtn.textContent = 'Закрыть';
+            closeBtn.onmouseenter = () => { closeBtn.style.background = 'rgba(255, 204, 0, 0.2)'; };
+            closeBtn.onmouseleave = () => { closeBtn.style.background = 'rgba(255, 204, 0, 0.1)'; };
+            closeBtn.onclick = () => {
+                content.style.transform = 'scale(0.95)';
+                modal.style.opacity = '0';
+                setTimeout(() => { modal.remove(); }, 300);
+            };
+            form.appendChild(team1Row);
+            form.appendChild(team2Row);
+            form.appendChild(mapSelect);
+            form.appendChild(saveBtn);
+            form.appendChild(closeBtn);
+            content.appendChild(title);
+            content.appendChild(form);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+        async function checkAdminStatus(user) {
+            if (!user || !user.email) return false;
+            try {
+                const emailKey = user.email.replace('.', ',');
+                const snapshot = await database.ref('moscowM1X/admins').child(emailKey).once('value');
+                return snapshot.exists();
+            } catch (error) {
+                return false;
+            }
+        }
+        function startRealtimePlayoff() {
+            groupStageRef.on('value', (groupSnapshot) => {
+                standings = loadStandingsFromSnapshot(groupSnapshot);
+                if (!standings) {
+                    bracketContent.innerHTML = '<div class="firebase-error">Group stage not completed yet.</div>';
+                    return;
+                }
+                playoffRef.on('value', (playoffSnapshot) => {
+                    let playoffData = playoffSnapshot.val() || { isPlayoffActive: false, matches: {} };
+                    if (!playoffData.isPlayoffActive) {
+                        playoffData = {
+                            isPlayoffActive: true,
+                            matches: {}
+                        };
+                        MATCH_STRUCTURE.forEach(m => {
+                            playoffData.matches[m.id] = {
+                                team1: m.teams[0],
+                                team2: m.teams[1],
+                                map: null,
+                                score1: null,
+                                score2: null,
+                                completed: false,
+                                winner: null,
+                                loser: null,
+                                sourceBracket: getBracketSource(m.id)
+                            };
+                        });
+                        playoffRef.set(playoffData);
+                        return;
+                    }
+                    renderBracket(playoffData, standings);
+                });
+            });
+        }
+        document.getElementById('archiveBtn').onclick = archiveCurrentTournament;
+        auth.onAuthStateChanged(async (user) => {
+            isAuthenticated = !!user;
+            isAdmin = user ? await checkAdminStatus(user) : false;
+            await loadConfigForPlayoff();
+            startRealtimePlayoff();
+        });
+    </script>
+</body>
+</html>
