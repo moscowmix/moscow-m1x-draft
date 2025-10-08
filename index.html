@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Moscow M1X — Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Bebas Neue', sans-serif;
+            background: url('bg2.png') center center / cover fixed;
+            color: #e0e0e0;
+            line-height: 1.6;
+            font-size: 1.25em;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #000;
+            padding: 16px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #ff3366;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo-container {
+            width: 70px;
+            height: 70px;
+            overflow: hidden;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            flex-grow: 1;
+            justify-content: center;
+            font-size: 1.35em;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            letter-spacing: 1.2px;
+            font-weight: 400;
+            white-space: nowrap;
+        }
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #ff3366;
+            background: rgba(255, 51, 102, 0.1);
+            transform: scale(1.08);
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+        }
+        .auth-link {
+            color: #66ccff;
+            text-decoration: none;
+            font-size: 1.35em;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            letter-spacing: 1.2px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .auth-link:hover {
+            color: #88ddff;
+            background: rgba(100, 200, 255, 0.1);
+            transform: scale(1.08);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 0 20px;
+            margin-top: 20px;
+        }
+
+        .content {
+            text-align: center;
+            padding-top: 150px; 
+        }
+
+        .title-main {
+            color: #ffffff;
+        }
+        .title-red {
+            color: #ff0033;
+            text-shadow:
+                0 0 6px rgba(255,0,51,0.6),
+                0 0 12px rgba(255,0,51,0.3);
+        }
+        h1 {
+            font-size: 4.2em;
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow:
+                0 0 6px rgba(255,255,255,0.6),
+                0 0 12px rgba(255,255,255,0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 8px;
+        }
+
+        .footer-credit {
+            text-align: center;
+            padding: 20px 0 50px;
+            font-size: 0.85em;
+            color: #777;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #222;
+            padding: 8px;
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.05);
+            box-shadow: none;
+        }
+
+        .social-icon:nth-child(1):hover { background: #0088cc; }
+        .social-icon:nth-child(2):hover { background: #4c75f2; }
+        .social-icon:nth-child(3):hover { background: #9146ff; }
+
+        .social-icon img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            transition: filter 0.3s ease;
+        }
+
+        .social-icon:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 1.15em;
+            }
+            .navbar {
+                padding: 14px 12px;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .logo-container {
+                width: 60px;
+                height: 60px;
+            }
+            .nav-links {
+                gap: 12px;
+                justify-content: center;
+                font-size: 1.2em;
+            }
+            .nav-links a {
+                padding: 8px 14px;
+                font-size: 1.15em;
+            }
+            .auth-link {
+                font-size: 1.2em;
+                padding: 8px 14px;
+            }
+            h1 {
+                font-size: 3.2em;
+                letter-spacing: 1.5px;
+                white-space: normal;
+            }
+            .footer-credit {
+                font-size: 0.8em;
+                padding: 20px 0 45px;
+            }
+            .social-icons {
+                gap: 12px;
+                bottom: 15px;
+                left: 15px;
+            }
+            .social-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .social-icon img {
+                width: 26px;
+                height: 26px;
+            }
+
+            .content {
+                padding-top: 30px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 1.1em;
+            }
+            .logo-container {
+                width: 50px;
+                height: 50px;
+            }
+            .nav-links {
+                gap: 10px;
+                font-size: 1.1em;
+            }
+            .nav-links a {
+                padding: 7px 12px;
+                font-size: 1.05em;
+                letter-spacing: 1px;
+            }
+            .auth-link {
+                font-size: 1.1em;
+                padding: 7px 12px;
+            }
+            h1 {
+                font-size: 2.6em;
+                letter-spacing: 1.2px;
+            }
+            .footer-credit {
+                font-size: 0.75em;
+                padding: 20px 0 40px;
+            }
+            .social-icons {
+                gap: 10px;
+                bottom: 12px;
+                left: 12px;
+            }
+            .social-icon {
+                width: 32px;
+                height: 32px;
+            }
+            .social-icon img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .content {
+                padding-top: 25px;
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: rgba(20,20,35,0.95);
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid rgba(255,50,100,0.5);
+            box-shadow: 0 0 30px rgba(255,0,51,0.3);
+            text-align: center;
+        }
+        .modal-content h3 {
+            margin: 0 0 20px;
+            font-size: 1.8em;
+            color: #fff;
+            letter-spacing: 1.5px;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 0.8px;
+            outline: none;
+        }
+        .modal-input:focus {
+            border-color: #ff3366;
+            box-shadow: 0 0 8px rgba(255,51,102,0.5);
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0 5px;
+            background: rgba(255, 10, 60, 0.85);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: 400;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn:hover {
+            background: rgba(255, 30, 80, 0.9);
+            transform: translateY(-2px);
+        }
+        .modal-error {
+            color: #ff6666;
+            font-size: 0.9em;
+            margin: 10px 0;
+            min-height: 1.2em;
+        }
+        .modal-footer {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        .modal-footer a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
+        .modal-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo-container">
+            <img src="logo.png" alt="Moscow M1X Logo">
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">HOME</a></li>
+            <li><a href="draft.html">DRAFT</a></li>
+            <li><a href="group-stage.html">GROUP STAGE</a></li>
+            <li><a href="bracket.html">PLAYOFF</a></li>
+            <li><a href="results.html">RESULTS</a></li>
+        </ul>
+        <div class="auth-link" id="authHeaderLink">SIGN IN</div>
+    </nav>
+
+    <div class="main-content">
+        <div class="content">
+            <h1>WELCOME TO MOSCOW M<span class="title-red">1</span>X</h1>
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        Developed by Snip & Qwen
+        <div class="social-icons">
+            <a href="https://t.me/chumaxxi13" target="_blank" class="social-icon" aria-label="Telegram">
+                <img src="icons/telegram.svg" alt="Telegram">
+            </a>
+            <a href="https://vk.com/solnyshkovrukahtvoih" target="_blank" class="social-icon" aria-label="VK">
+                <img src="icons/vk.svg" alt="VK">
+            </a>
+            <a href="https://www.twitch.tv/solnyshkovrukah" target="_blank" class="social-icon" aria-label="Twitch">
+                <img src="icons/twitch.svg" alt="Twitch">
+            </a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWnLO_5YgaNFiy-wvynVEKcMnS8V55FXY",
+            authDomain: "moscow-m1x-draft-f9da4.firebaseapp.com",
+            databaseURL: "https://moscow-m1x-draft-f9da4-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "moscow-m1x-draft-f9da4",
+            storageBucket: "moscow-m1x-draft-f9da4.firebasestorage.app",
+            messagingSenderId: "391636730262",
+            appId: "1:391636730262:web:2441abb086b5336b451db7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        let isAuthenticated = false;
+        const authHeaderLink = document.getElementById('authHeaderLink');
+
+        function updateAuthButtons() {
+            authHeaderLink.textContent = isAuthenticated ? 'SIGN OUT' : 'SIGN IN';
+        }
+
+        function showLoginModal() {
+            if (document.getElementById('authModal')) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'authModal';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h3>🔐 Login</h3>
+                    <input type="email" class="modal-input" id="emailInput" placeholder="Email" autocomplete="email">
+                    <input type="password" class="modal-input" id="passwordInput" placeholder="Password" autocomplete="current-password">
+                    <div class="modal-error" id="authError"></div>
+                    <button class="modal-btn" id="submitLogin">Login</button>
+                    <div class="modal-footer">
+                        Contact admin for access.
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const submitBtn = overlay.querySelector('#submitLogin');
+            const emailInput = overlay.querySelector('#emailInput');
+            const passwordInput = overlay.querySelector('#passwordInput');
+            const errorEl = overlay.querySelector('#authError');
+
+            submitBtn.onclick = () => {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                if (!email || !password) {
+                    errorEl.textContent = "Please fill in all fields.";
+                    return;
+                }
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        isAuthenticated = true;
+                        document.body.removeChild(overlay);
+                        updateAuthButtons();
+                    })
+                    .catch((error) => {
+                        console.error("Auth error:", error);
+                        errorEl.textContent = "Invalid email or password.";
+                    });
+            };
+
+            overlay.onclick = (e) => {
+                if (e.target === overlay) document.body.removeChild(overlay);
+            };
+        }
+
+        authHeaderLink.onclick = () => {
+            if (isAuthenticated) {
+                auth.signOut().then(() => {
+                    isAuthenticated = false;
+                    updateAuthButtons();
+                }).catch(alert);
+            } else {
+                showLoginModal();
+            }
+        };
+
+        auth.onAuthStateChanged((user) => {
+            isAuthenticated = !!user;
+            updateAuthButtons();
+        });
+
+        updateAuthButtons();
+    </script>
+</body>
+</html>
