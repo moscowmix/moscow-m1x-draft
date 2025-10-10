@@ -439,12 +439,10 @@
     window.addEventListener('scroll', updateNavbarOnScroll);
     logoContainer.addEventListener('click', toggleNavbarOnLogoClick);
 
-    // Убедимся, что на десктопе шапка не свёрнута
     if (!isMobile()) {
         navbar.classList.remove('collapsed');
     }
 
-    // Обработка изменения размера окна
     window.addEventListener('resize', function() {
         if (!isMobile()) {
             navbar.classList.remove('collapsed');
