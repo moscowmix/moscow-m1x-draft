@@ -1,0 +1,417 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --gold: #ffcc00;
+    --bg-overlay: rgba(15, 15, 25, 0.85);
+    --control-bg: rgba(20, 20, 35, 0.92);
+    --border-color: rgba(255, 204, 0, 0.3);
+}
+
+body {
+    font-family: 'Bebas Neue', sans-serif;
+    background: url('bg2.png') center center / cover fixed;
+    color: #e0e0e0;
+    line-height: 1.6;
+    font-size: 1.25em;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+}
+
+.navbar {
+    background: #000;
+    padding: 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ff3366;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo-container {
+    width: 70px;
+    height: 70px;
+    overflow: hidden;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.logo-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    justify-content: center;
+    font-size: 1.35em;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    letter-spacing: 1.2px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #ff3366;
+    background: rgba(255, 51, 102, 0.1);
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+}
+
+.auth-link {
+    color: #66ccff;
+    text-decoration: none;
+    font-size: 1.35em;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    letter-spacing: 1.2px;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.auth-link:hover {
+    color: #88ddff;
+    background: rgba(100, 200, 255, 0.1);
+    transform: scale(1.08);
+}
+
+.footer-credit {
+    text-align: center;
+    padding: 20px 0 30px;
+    font-size: 0.85em;
+    color: #777;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.header-section .bracket-header {
+    font-size: 2.6em;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffcc00;
+    margin: 0;
+    text-align: center;
+}
+
+.header-section #formatSelectorContainer {
+    width: auto;
+}
+
+.header-section #bracketFormatSelect {
+    padding: 9px 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1em;
+    letter-spacing: 1px;
+    outline: none;
+    min-width: 220px;
+    text-align: center;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.header-section #bracketFormatSelect:focus {
+    border-color: #ff3366;
+    box-shadow: 0 0 8px rgba(255, 51, 102, 0.5);
+}
+
+.header-section #bracketFormatSelect option {
+    background: rgba(20, 20, 35, 0.95);
+    color: #ffffff;
+    padding: 8px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1em;
+    letter-spacing: 1px;
+}
+
+.header-section #bracketFormatSelect option:checked {
+    background: rgba(255, 51, 102, 0.2);
+    color: #ff3366;
+}
+
+#bracketContent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.loading,
+.firebase-error {
+    text-align: center;
+    font-size: 1.4em;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    max-width: 650px;
+    width: 90%;
+    margin: 0 auto;
+    letter-spacing: 1px;
+}
+
+.loading {
+    color: #aaa;
+}
+
+.firebase-error {
+    color: #ff6666;
+}
+
+.archive-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.5em;
+    color: var(--gold);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.archive-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: rgba(20,20,35,0.95);
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    border: 2px solid rgba(255,50,100,0.5);
+    box-shadow: 0 0 30px rgba(255,0,51,0.3);
+    text-align: center;
+}
+
+.modal-content h3 {
+    margin: 0 0 20px;
+    font-size: 1.8em;
+    color: #fff;
+    letter-spacing: 1.5px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1em;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.8px;
+    outline: none;
+}
+
+.modal-input:focus {
+    border-color: #ff3366;
+    box-shadow: 0 0 8px rgba(255,51,102,0.5);
+}
+
+.modal-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0 5px;
+    background: rgba(255, 10, 60, 0.85);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1em;
+    font-weight: 400;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn:hover {
+    background: rgba(255, 30, 80, 0.9);
+    transform: translateY(-2px);
+}
+
+.modal-error {
+    color: #ff6666;
+    font-size: 0.9em;
+    margin: 10px 0;
+    min-height: 1.2em;
+}
+
+.modal-footer {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.modal-footer a {
+    color: #ffcc00;
+    text-decoration: none;
+}
+
+.modal-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 1.15em;
+    }
+    .navbar {
+        padding: 14px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+    .logo-container {
+        width: 60px;
+        height: 60px;
+        align-self: center;
+    }
+    .nav-links {
+        gap: 12px;
+        font-size: 1.2em;
+    }
+    .nav-links a {
+        padding: 8px 14px;
+        font-size: 1.15em;
+    }
+    .auth-link {
+        font-size: 1.2em;
+        padding: 8px 14px;
+    }
+    .header-section .bracket-header {
+        font-size: 2.2em;
+    }
+    .header-section #bracketFormatSelect {
+        font-size: 1em;
+        min-width: 180px;
+        padding: 8px 16px;
+    }
+    .archive-btn {
+        width: 50px;
+        height: 50px;
+        bottom: 15px;
+        right: 15px;
+        font-size: 1.3em;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 1.1em;
+    }
+    .logo-container {
+        width: 50px;
+        height: 50px;
+    }
+    .nav-links {
+        gap: 10px;
+        font-size: 1.1em;
+    }
+    .nav-links a {
+        padding: 7px 12px;
+        font-size: 1.05em;
+        letter-spacing: 1px;
+    }
+    .auth-link {
+        font-size: 1.1em;
+        padding: 7px 12px;
+    }
+    .footer-credit {
+        font-size: 0.75em;
+    }
+    .header-section .bracket-header {
+        font-size: 1.9em;
+    }
+    .header-section #bracketFormatSelect {
+        font-size: 0.95em;
+        min-width: 160px;
+        padding: 7px 14px;
+    }
+    .loading,
+    .firebase-error {
+        font-size: 1.25em;
+        padding: 16px;
+    }
+    .archive-btn {
+        width: 44px;
+        height: 44px;
+        bottom: 12px;
+        right: 12px;
+        font-size: 1.2em;
+    }
+}
