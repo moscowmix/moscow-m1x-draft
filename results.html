@@ -338,32 +338,48 @@
         });
         loadTournamentList();
     document.addEventListener('DOMContentLoaded', function() {
-        const navbar = document.querySelector('.navbar');
-        const logoContainer = document.querySelector('.logo-container');
+    const navbar = document.querySelector('.navbar');
+    const logoContainer = document.querySelector('.logo-container');
 
-        if (!navbar || !logoContainer) return;
+    if (!navbar || !logoContainer) return;
 
-        const TOP_THRESHOLD = 50;
+    const MOBILE_MAX_WIDTH = 768;
+    const TOP_THRESHOLD = 50;
 
-        function updateNavbarOnScroll() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    function isMobile() {
+        return window.innerWidth <= MOBILE_MAX_WIDTH;
+    }
 
-            if (scrollTop > TOP_THRESHOLD) {
-                navbar.classList.add('collapsed');
-            } else {
-                navbar.classList.remove('collapsed');
-            }
+    function updateNavbarOnScroll() {
+        if (!isMobile()) return;
+
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > TOP_THRESHOLD) {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
         }
+    }
 
-        window.addEventListener('scroll', updateNavbarOnScroll);
+    function toggleNavbarOnLogoClick(e) {
+        if (!isMobile()) return;
+        e.preventDefault();
+        navbar.classList.toggle('collapsed');
+    }
 
-        logoContainer.addEventListener('click', function(e) {
-            e.preventDefault();
-            navbar.classList.toggle('collapsed');
-        });
+    window.addEventListener('scroll', updateNavbarOnScroll);
+    logoContainer.addEventListener('click', toggleNavbarOnLogoClick);
 
+    if (!isMobile()) {
         navbar.classList.remove('collapsed');
+    }
+
+    window.addEventListener('resize', function() {
+        if (!isMobile()) {
+            navbar.classList.remove('collapsed');
+        }
     });
+});
     </script>
 </body>
 </html>
