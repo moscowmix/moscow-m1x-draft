@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moscow Mix - Temporarily Unavailable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0a0a0a;
+            background-image: 
+                radial-gradient(at 20% 30%, rgba(255, 0, 64, 0.1) 0px, transparent 50%),
+                radial-gradient(at 80% 70%, rgba(255, 0, 64, 0.1) 0px, transparent 50%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background pattern */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 0, 64, 0.03) 2px,
+                rgba(255, 0, 64, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .logo {
+            margin-bottom: 40px;
+        }
+
+        .logo-img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(255, 0, 64, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ff0040;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            color: #b0b0b0;
+            margin: 30px 0;
+            font-style: italic;
+        }
+
+        .accent-line {
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff0040, transparent);
+            margin: 30px auto;
+        }
+
+        /* Social Icons - Bottom Left */
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            margin: 0;
+            padding: 0;
+            z-index: 10;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #222;
+            padding: 8px;
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.05);
+            box-shadow: none;
+        }
+
+        .social-icon:nth-child(1):hover { background: #0088cc; }
+        .social-icon:nth-child(2):hover { background: #4c75f2; }
+        .social-icon:nth-child(3):hover { background: #9146ff; }
+
+        .social-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            transition: filter 0.3s ease;
+        }
+
+        .social-icon:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .message {
+                font-size: 1rem;
+                padding: 0 20px;
+            }
+            
+            .logo-img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .social-icons { 
+                gap: 12px; 
+                bottom: 15px; 
+                left: 15px; 
+            }
+            
+            .social-icon { 
+                width: 36px; 
+                height: 36px; 
+            }
+            
+            .social-icon img { 
+                width: 20px; 
+                height: 20px; 
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .message {
+                font-size: 0.95rem;
+                padding: 0 15px;
+            }
+
+            .logo-img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .social-icons { 
+                gap: 10px; 
+                bottom: 12px; 
+                left: 12px; 
+            }
+            
+            .social-icon { 
+                width: 32px; 
+                height: 32px; 
+            }
+            
+            .social-icon img { 
+                width: 18px; 
+                height: 18px; 
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container > * {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .container > *:nth-child(1) { animation-delay: 0.1s; }
+        .container > *:nth-child(2) { animation-delay: 0.2s; }
+        .container > *:nth-child(3) { animation-delay: 0.3s; }
+        .container > *:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="logo.png" alt="Moscow M1X Logo" class="logo-img">
+        </div>
+
+        <h1>Website Under Maintenance</h1>
+        
+        <div class="accent-line"></div>
+        
+        <p class="subtitle">Temporarily Unavailable</p>
+
+        <p class="message">If you need a website, you know where to find me :-)</p>
+    </div>
+
+    <!-- Social Icons - Bottom Left -->
+    <div class="social-icons">
+        <a href="https://t.me/chumaxxi13" target="_blank" class="social-icon" aria-label="Telegram">
+            <img src="icons/telegram.svg" alt="Telegram">
+        </a>
+        <a href="https://vk.com/solnyshkovkovrukahtvoih" target="_blank" class="social-icon" aria-label="VK">
+            <img src="icons/vk.svg" alt="VK">
+        </a>
+        <a href="https://www.twitch.tv/solnyshkovrukah" target="_blank" class="social-icon" aria-label="Twitch">
+            <img src="icons/twitch.svg" alt="Twitch">
+        </a>
+    </div>
+</body>
+</html>
